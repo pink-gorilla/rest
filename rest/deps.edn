@@ -40,14 +40,6 @@
                  babashka/fs {:mvn/version "0.0.5"}}
           :ns-default build}
 
-  :deploy-jar
-  {:replace-deps {slipset/deps-deploy {:mvn/version "0.2.0"}}
-   :exec-fn deps-deploy.deps-deploy/deploy
-   :exec-args {:installer :remote
-               :artifact "target/webly.jar"}}
-
-
-
 ;
   }}
 
