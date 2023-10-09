@@ -1,6 +1,5 @@
 (ns modular.rest.martian.xero
   (:require
-   [taoensso.timbre :as timbre :refer [debug info warn error]]
    [martian.core :as martian]
    [schema.core :as s]
    [martian.interceptors :as interceptors]
@@ -27,6 +26,13 @@
     :path-parts ["/connections"]
     :produces ["application/json"]
     :consumes ["application/json"]}
+   ; CONTACT / GROUP
+   {:route-name :contact-list
+    :summary "list contacts"
+    :method :get
+    :path-parts ["/api.xro/2.0/Contacts/"]
+    :produces ["application/json"]
+    :consumes ["application/json"]}
    {:route-name :contact
     :summary "get contact"
     :method :get
@@ -42,12 +48,6 @@
     :body-schema {:c {:contacts s/Any}}
     :produces ["application/json"]
     :consumes ["application/json"]}
-   {:route-name :contact-list
-    :summary "list contacts"
-    :method :get
-    :path-parts ["/api.xro/2.0/Contacts/"]
-    :produces ["application/json"]
-    :consumes ["application/json"]}
    {:route-name :add-contacts-to-group
     :summary "adds contacts to contact-group"
     :method :put
@@ -56,12 +56,21 @@
     :body-schema {:c {:Contacts s/Any}}
     :produces ["application/json"]
     :consumes ["application/json"]}
-   {:route-name :contact-group
+   {:route-name :contact-groups
     :summary "list contact-group"
     :method :get
     :path-parts ["/api.xro/2.0/ContactGroups"]
     :produces ["application/json"]
     :consumes ["application/json"]}
+   {:route-name :contact-group
+    :summary "get contact-group"
+    :method :get
+    :path-parts ["/api.xro/2.0/ContactGroups/" :group-id]
+    :path-schema {:group-id s/Str}
+      ;:body-schema {:c {:Contacts s/Any}}
+    :produces ["application/json"]
+    :consumes ["application/json"]}
+   ;; INVOICE
    {:route-name :invoice
     :summary "get invoice"
     :method :get
@@ -97,6 +106,31 @@
    ;:path-schema {:contact-id s/Str}
     :body-schema {:c {:invoices s/Any}}
     :produces ["application/json"]
+    :consumes ["application/json"]}
+   ;; PRODUCT
+   {:route-name :product-list
+    :summary "list products"
+    :method :get
+    :path-parts ["/api.xro/2.0/Items/"]
+    :query-schema {s/Any s/Any}
+    :produces ["application/json"]
+    :consumes ["application/json"]}
+   ;; PO
+   {:route-name :order-list
+    :summary "list orders"
+    :method :get
+    :path-parts ["/api.xro/2.0/PurchaseOrders/"] ; https://api.xero.com/api.xro/2.0/
+    :query-schema {s/Any s/Any}
+    :produces ["application/json"]
+    :consumes ["application/json"]}
+   ;; REPORT
+   {:route-name :report
+    :summary "xero report"
+    :method :get
+    :path-parts ["/api.xro/2.0/Reports/" :report-name] ; https://api.xero.com/api.xro/2.0/BankSummary
+    :path-schema {:report-name s/Str}
+    :query-schema {s/Any s/Any}
+    :produces ["application/json"]
     :consumes ["application/json"]}])
 
 ;:path-schema {:id s/Int}
@@ -126,11 +160,18 @@
      interceptors/default-coerce-response
      martian-http/perform-request])})
 
-(defn martian-xero-tenant [tenant-id]
-  (let [m (martian-http/bootstrap
-           "https://api.xero.com"
-           endpoints
-           (interceptors tenant-id))]
-    m))
 
+(defn martian-xero-tenant
+  ([tenant-id]
+   (martian-xero-tenant endpoints tenant-id))
+  ([endpoints tenant-id]
+   (let [m (martian-http/bootstrap
+            "https://api.xero.com"
+            endpoints
+            (interceptors tenant-id))]
+     m)))
 
+(defn martian-xero-tenant-since [tenant-id since]
+  (let [i (interceptors tenant-id)
+        i (update i :interceptors #(concat % (add-modified-since-header since)))]
+  (martian-http/bootstrap "https://api.xero.com" endpoints i)))

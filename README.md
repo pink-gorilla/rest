@@ -12,3 +12,16 @@
 ## Email Sending
 
 ## Telegram Messenging
+
+# demo
+
+The demo uses the extension manager from goldly to add oauth2 to goldly.
+
+```
+cd demo
+clj -X:demo:npm-install
+clj -X:demo:compile
+clj -X:demo
+```
+
+Test local user/password login: user: "demo" password: "1234"

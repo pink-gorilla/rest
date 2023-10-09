@@ -1,13 +1,11 @@
 (ns modular.rest.martian.oauth2
   (:require
-   [clojure.pprint :refer [print-table]]
-   [taoensso.timbre :as timbre :refer [debug info warn error]]
    ;[clj-http.client :as http]
    [martian.core :as martian]
    [martian.interceptors :as interceptors]
    [martian.clj-http :as martian-http]
-   [modular.config :refer [get-in-config]]
-   [modular.oauth2.token.store :refer [load-token]]))
+   [modular.oauth2.token.store :refer [load-token]]
+   [modular.oauth2.config :as config]))
 
 ; token-prefix could be:
 ; "Token: "
@@ -16,11 +14,9 @@
 (defn add-authentication-header [provider]
   {:name ::add-authentication-header
    :enter (fn [ctx]
-            (let [token-prefix (get-in-config [:oauth2 provider :token-prefix])
+            (let [token-prefix (config/token-prefix provider)
                   token (load-token provider)
                   access-token (:access-token token)]
-              (debug "provider " provider "config: " (get-in-config [:oauth2 provider]))
-              (debug "provider " provider "prefix: " token-prefix)
               (assoc-in ctx
                         [:request :headers "Authorization"]
                         (str token-prefix access-token))))})
