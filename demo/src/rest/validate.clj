@@ -4,13 +4,13 @@
    [taoensso.timbre :as timbre :refer [info error]]
    [schema.core :as s]
    [martian.core :as martian]
-   [modular.oauth2.token.refresh :refer [refresh-auth-token]]
+   [modular.oauth2.token.refresh :refer [refresh-access-token]]
    [modular.rest.martian.xero :refer [martian-xero martian-xero-tenant]]
    [modular.rest.schema.xero :as sxero]))
 
 
 (defn validate []
-  (refresh-auth-token :xero)
+  @(refresh-access-token :xero)
   (let [tenant-id "791f3cb4-97b9-45f9-b5e6-7319cda87626"
         t (martian-xero-tenant tenant-id)
         contacts (->> (martian/response-for t :contact-list

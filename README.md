@@ -25,3 +25,23 @@ clj -X:demo
 ```
 
 Test local user/password login: user: "demo" password: "1234"
+
+Authorize xero/google/...
+
+Then you can run the cli demos that use the access tokens:
+
+```
+clj -X:run:rest-google
+clj -X:run:rest-github
+clj -X:run:rest-xero
+
+clj -X:run:rest-woo
+
+clj -X:run:rest-email
+clj -X:run:rest-telegram
+
+; infer schema from rest-api-response (useful to quickly create api schema)
+clj -X:run:rest-schema
+
+
+```

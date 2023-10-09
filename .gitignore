@@ -6,10 +6,6 @@ pom.xml.asc
 /classes/
 /target/
 /checkouts/
-.lein-deps-sum
-.lein-repl-history
-.lein-plugins/
-.lein-failures
 .nrepl-port
 .cpcache/
 /test/creds.edn
@@ -19,11 +15,13 @@ pom.xml.asc
 node_modules
 .shadow-cljs
 shadow-cljs.edn
-.calva
-.lsp/
+karma.conf.js
+goldly_bindings_generated.cljs
 package.json
 package-lock.json
 /karma.conf.js
+.calva
+.lsp/
 .webly
 certs
 target/
@@ -38,4 +36,3 @@ creds-localhost.edn
 \#*\#
 .\#*
 .~*
-resources

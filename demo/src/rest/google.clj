@@ -3,10 +3,10 @@
    [clojure.pprint :refer [print-table]]
    [taoensso.timbre :as timbre :refer [info error]]
    [martian.core :as martian]
-   [modular.oauth2.token.refresh :refer [refresh-auth-token]]
+   [modular.oauth2.token.refresh :refer [refresh-access-token]]
    [modular.rest.martian.google :refer [martian-googleapis martian-google-sheets martian-google-search]]))
 
-(def modify-request 
+(def modify-request
   {; url
    :id  "1oO-UlrkEwaED_fKcNm27lIN9EdcbwF8iCS5UiYFOnk8"
    :where "/values/Sheet1!A1:D5"
@@ -22,11 +22,11 @@
             ["Totals" "=SUM(B2:B4)" "=SUM(C2:C4)" "=MAX(D2:D4)"]]})
 
 
- (defn show-request [m endpoint params]
-   (let [r (martian/request-for m endpoint params)]
-     (info "request " endpoint ":" (pr-str r)
+(defn show-request [m endpoint params]
+  (let [r (martian/request-for m endpoint params)]
+    (info "request " endpoint ":" (pr-str r)
            ;"body: " (slurp (:body r))
-           )))
+          )))
 
 ;(defn post-cells []
 ; (post-request 
@@ -37,28 +37,35 @@
 ;                            ["bodrum" "4"]]}]}
 ;   ))
 
-(defn google []
-  (refresh-auth-token :google)
-  (let [m (martian-googleapis)
-        s (martian-google-sheets)
-        S (martian-google-search)
-        ]
-     (info "google/userinfo: " (-> (martian/response-for m :userinfo {}) :body))
-     (->> (martian/response-for m :drive-files-list {})
-          :body
-          :files
-          (map #(dissoc % :kind :id :mimeType))
-          (print-table))
- 
-   (show-request s :sheet-edit modify-request)
-   
-   (->> (martian/response-for s :sheet-edit modify-request)
-          :body
-          (info))
+(def m (martian-googleapis))
+(def s (martian-google-sheets))
+(def S (martian-google-search))
 
-   (->> (martian/response-for S :search {:q "clojure" :num 10})
-          :body
-          (info))
+(defn google []
+  ; this function can be evaled entirely via clj-cli
+    ; or you can connect via nrepl port 9100 and eval 
+    ; one by one
+  @(refresh-access-token :google)
+
+  ; userinfo
+  (info "google/userinfo: " (-> (martian/response-for m :userinfo {}) :body))
+
+  ; google drive
+  (->> (martian/response-for m :drive-files-list {})
+       :body
+       :files
+       (map #(dissoc % :kind :id :mimeType))
+       (print-table))
+
+  (show-request s :sheet-edit modify-request)
+
+  (->> (martian/response-for s :sheet-edit modify-request)
+       :body
+       (info))
+
+  (->> (martian/response-for S :search {:q "clojure" :num 10})
+       :body
+       (info))
 
   ;
-  ))
+  )

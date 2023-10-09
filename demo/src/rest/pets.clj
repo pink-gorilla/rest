@@ -6,7 +6,7 @@
    [martian.clj-http :as martian-http]
    [martian.core :as martian]
    [modular.config :refer [get-in-config config-atom]]
-   [modular.base64 :refer [base64-encode]]
+   [modular.oauth2.base64 :refer [base64-encode]]
 ))
 
 

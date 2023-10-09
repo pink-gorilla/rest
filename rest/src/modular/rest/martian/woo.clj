@@ -8,7 +8,7 @@
    [martian.interceptors :as interceptors]
    [schema.core :as s]
    [modular.config :refer [get-in-config config-atom]]
-   [modular.base64 :refer [base64-encode]]))
+   [modular.oauth2.base64 :refer [base64-encode]]))
 
 (def endpoints
   [{:route-name :orders

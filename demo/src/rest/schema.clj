@@ -5,7 +5,7 @@
    [martian.core :as martian]
    [funes.core :as f]
    [funes.schema :as s]
-   [modular.oauth2.token.refresh :refer [refresh-auth-token]]
+   [modular.oauth2.token.refresh :refer [refresh-access-token]]
    [modular.rest.paging :refer [request-paginated]]
    [modular.rest.martian.xero :refer [martian-xero martian-xero-tenant]]))
 
@@ -14,7 +14,8 @@
 ; https://github.com/txus/funes
 
 (defn infer-schema []
-  (refresh-auth-token :xero)
+  @(refresh-access-token :xero)
+  
   (let [tenant-id "791f3cb4-97b9-45f9-b5e6-7319cda87626"
         t (martian-xero-tenant tenant-id)
         ;invoice-id "e10557d0-f6d4-4a86-b790-6a93e8281a52"
