@@ -6,13 +6,6 @@
    [martian.clj-http :as martian-http]
    [modular.rest.martian.oauth2 :refer [martian-oauth2 add-authentication-header]]))
 
-(defn add-modified-since-header [dt]
-  {:name ::add-modified-since-header
-   :enter (fn [ctx]
-            (assoc-in ctx
-                      [:request :headers "If-Modified-Since"]
-                      dt))})
-
 (def endpoints
   [{:route-name :userinfo
     :summary "user info"
@@ -92,7 +85,8 @@
     :query-schema {s/Any s/Any}
     :produces ["application/json"]
     :consumes ["application/json"]
-    :interceptors [(add-modified-since-header "2022-01-01T00:00:00")]}
+    ;:interceptors [(add-modified-since-header "2022-01-01T00:00:00")]
+    }
    {:route-name :branding-themes
     :summary "list branding-themes"
     :method :get
@@ -133,8 +127,8 @@
     :produces ["application/json"]
     :consumes ["application/json"]}])
 
-;:path-schema {:id s/Int}
-:query-schema {:q s/Str}
+; :path-schema {:id s/Int}
+; :query-schema {:q s/Str}
 
 (defn martian-xero []
   (let [m (martian-oauth2
@@ -143,23 +137,23 @@
            endpoints)]
     m))
 
-(defn add-tenant-header [tenant-id]
+;; XERO-TENANT
+
+(defn- add-tenant-header [tenant-id]
   {:name ::add-tenant-header
    :enter (fn [ctx]
             (assoc-in ctx
                       [:request :headers "Xero-Tenant-Id"]
                       tenant-id))})
 
-(defn interceptors [tenant-id]
-  {:interceptors
-   (concat
+(defn- interceptors-tenant [tenant-id]
+  (concat
     martian/default-interceptors
     [(add-authentication-header :xero)
      (add-tenant-header tenant-id)
      interceptors/default-encode-body
      interceptors/default-coerce-response
-     martian-http/perform-request])})
-
+     martian-http/perform-request]))
 
 (defn martian-xero-tenant
   ([tenant-id]
@@ -168,10 +162,26 @@
    (let [m (martian-http/bootstrap
             "https://api.xero.com"
             endpoints
-            (interceptors tenant-id))]
+            {:interceptors (interceptors-tenant tenant-id)})]
      m)))
 
+;; XERO-TENANT-SINCE
+
+(defn- add-modified-since-header [dt]
+  {:name ::add-modified-since-header
+   :enter (fn [ctx]
+            (assoc-in ctx
+                      [:request :headers "If-Modified-Since"]
+                      dt))})
+
+(defn- interceptors-tenant-since [tenant-id since]
+  (concat
+     (interceptors-tenant tenant-id)
+     [(add-modified-since-header since)]))
+   
 (defn martian-xero-tenant-since [tenant-id since]
-  (let [i (interceptors tenant-id)
-        i (update i :interceptors #(concat % (add-modified-since-header since)))]
-  (martian-http/bootstrap "https://api.xero.com" endpoints i)))
+  (martian-http/bootstrap
+   "https://api.xero.com" 
+   endpoints 
+   {:interceptors (interceptors-tenant-since tenant-id since)}
+   ))
