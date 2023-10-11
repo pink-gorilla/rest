@@ -34,11 +34,18 @@
     :produces ["application/json"]
     :consumes ["application/json"]}
    {:route-name :contact-create
-    :summary "creates contacts"
+    :summary "creates/updates contacts"
     :method :post
     :path-parts ["/api.xro/2.0/Contacts/"]
-   ;:path-schema {:contact-id s/Str}
-    :body-schema {:c {:contacts s/Any}}
+    :body-schema {:c s/Any}
+    :produces ["application/json"]
+    :consumes ["application/json"]}
+    #_{:route-name :contact-update ; post works for update; put is not needed
+    :summary "update contact"
+    :method :put
+    :path-parts ["/api.xro/2.0/Contacts/" :contact-id]
+    :path-schema {:contact-id s/Str}
+    :body-schema {:c {:Contacts s/Any}}
     :produces ["application/json"]
     :consumes ["application/json"]}
    {:route-name :add-contacts-to-group
@@ -84,9 +91,7 @@
     :path-parts ["/api.xro/2.0/Invoices/"]
     :query-schema {s/Any s/Any}
     :produces ["application/json"]
-    :consumes ["application/json"]
-    ;:interceptors [(add-modified-since-header "2022-01-01T00:00:00")]
-    }
+    :consumes ["application/json"]}
    {:route-name :branding-themes
     :summary "list branding-themes"
     :method :get
