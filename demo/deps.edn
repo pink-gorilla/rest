@@ -65,7 +65,6 @@
   :rest-google {:exec-args {:provider :google}}
   
   :rest-email {:exec-args {:provider :email}}
-  :rest-telegram {:exec-args {:provider :telegram}}
 
   :rest-woo {:exec-args {:provider :woo}}
   ;:rest-wordpress {:exec-args {:provider :wordpress}} ; wordpress does not work

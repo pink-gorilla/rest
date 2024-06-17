@@ -9,7 +9,6 @@
    ; [rest.wordpress :refer [wordpress]]
    ; rest via libs
    [rest.email :refer [email]]
-   [rest.telegram :refer [telegram]]
    ; helper functions  
    [rest.schema :refer [infer-schema]]
    [rest.paging :refer [paging-xero]]
@@ -24,7 +23,6 @@
     :google (google)
     :github (github)
     :email (email)
-    :telegram (telegram)
     :woo (woo)
     :pets (pets)
  ;   :wordpress (wordpress)

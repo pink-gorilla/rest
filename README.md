@@ -11,7 +11,6 @@
 
 ## Email Sending
 
-## Telegram Messenging
 
 # demo
 
@@ -38,7 +37,7 @@ clj -X:run:rest-xero
 clj -X:run:rest-woo
 
 clj -X:run:rest-email
-clj -X:run:rest-telegram
+
 
 ; infer schema from rest-api-response (useful to quickly create api schema)
 clj -X:run:rest-schema
