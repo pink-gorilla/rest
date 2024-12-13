@@ -1,10 +1,10 @@
-(ns modular.rest.martian.xero
+(ns rest.provider.xero
   (:require
    [martian.core :as martian]
    [schema.core :as s]
    [martian.interceptors :as interceptors]
    [martian.clj-http :as martian-http]
-   [modular.rest.martian.oauth2 :refer [martian-oauth2 add-authentication-header]]))
+   [rest.oauth2 :refer [martian-oauth2 add-authentication-header]]))
 
 (def endpoints
   [{:route-name :userinfo
@@ -135,8 +135,8 @@
 ; :path-schema {:id s/Int}
 ; :query-schema {:q s/Str}
 
-(defn martian-xero []
-  (let [m (martian-oauth2
+(defn martian-xero [this]
+  (let [m (martian-oauth2 this
            :xero
            "https://api.xero.com"
            endpoints)]
@@ -151,23 +151,23 @@
                       [:request :headers "Xero-Tenant-Id"]
                       tenant-id))})
 
-(defn- interceptors-tenant [tenant-id]
+(defn- interceptors-tenant [this tenant-id]
   (concat
     martian/default-interceptors
-    [(add-authentication-header :xero)
+    [(add-authentication-header this :xero)
      (add-tenant-header tenant-id)
      interceptors/default-encode-body
      interceptors/default-coerce-response
      martian-http/perform-request]))
 
 (defn martian-xero-tenant
-  ([tenant-id]
-   (martian-xero-tenant endpoints tenant-id))
-  ([endpoints tenant-id]
+  ([this tenant-id]
+   (martian-xero-tenant this endpoints tenant-id))
+  ([this endpoints tenant-id]
    (let [m (martian-http/bootstrap
             "https://api.xero.com"
             endpoints
-            {:interceptors (interceptors-tenant tenant-id)})]
+            {:interceptors (interceptors-tenant this tenant-id)})]
      m)))
 
 ;; XERO-TENANT-SINCE
@@ -179,14 +179,14 @@
                       [:request :headers "If-Modified-Since"]
                       dt))})
 
-(defn- interceptors-tenant-since [tenant-id since]
+(defn- interceptors-tenant-since [this tenant-id since]
   (concat
-     (interceptors-tenant tenant-id)
+     (interceptors-tenant this tenant-id)
      [(add-modified-since-header since)]))
    
-(defn martian-xero-tenant-since [tenant-id since]
+(defn martian-xero-tenant-since [this tenant-id since]
   (martian-http/bootstrap
    "https://api.xero.com" 
    endpoints 
-   {:interceptors (interceptors-tenant-since tenant-id since)}
+   {:interceptors (interceptors-tenant-since this tenant-id since)}
    ))

@@ -1,11 +1,10 @@
 (ns rest.xero
   (:require
    [clojure.pprint :refer [print-table]]
-   [taoensso.timbre :as timbre :refer [info error]]
    [martian.core :as martian]
-   [promesa.core :as p]
-   [modular.oauth2.token.refresh :refer [refresh-access-token]]
-   [modular.rest.martian.xero :refer [martian-xero martian-xero-tenant]]))
+   [modular.system]
+   [modular.rest.paging :refer [request-paginated]]
+   [rest.provider.xero :refer [martian-xero martian-xero-tenant]]))
 
 
 ; this comes from the xero identity token:
@@ -103,18 +102,36 @@
    })
 
 
+(def this (modular.system/system :oauth2))
 
-(def m (martian-xero))
+(keys this)
+
+
+
+(def m (martian-xero this))
 (def tenant-id "791f3cb4-97b9-45f9-b5e6-7319cda87626")
-(def t (martian-xero-tenant tenant-id))
+(def t (martian-xero-tenant this tenant-id))
 (def invoice-id "e10557d0-f6d4-4a86-b790-6a93e8281a52")
 
-(defn refresh-token-blocking []
-  (let [r (refresh-access-token :xero)]
-    (-> r
-        (p/then #(println "xero access token successfully refreshed!"))
-        (p/catch #(println "ERROR refreshing access token: " %)))
-    @r))
+
+; show request that would be sent:
+(martian/request-for m :userinfo {})
+        
+(->> (martian/response-for t :userinfo {})
+            :body)
+
+; xero tenants: 
+(->> (martian/response-for m :tenants {})
+     :body
+     )
+;; => ({:id "869760d0-3d93-4ff9-a01f-0dfc40108e14",
+;;      :authEventId "19348f97-033e-4551-b1ac-1ccf02caa3ab",
+;;      :tenantId "791f3cb4-97b9-45f9-b5e6-7319cda87626",
+;;      :tenantType "ORGANISATION",
+;;      :tenantName "CRB Clean INC",
+;;      :createdDateUtc "2022-01-07T14:51:35.5172610",
+;;      :updatedDateUtc "2022-06-09T22:18:36.0378050"})
+
 
 (defn update-contact-name [contact-id name]
   (->>
@@ -126,7 +143,7 @@
    ;:Contacts
   ;:body
   ;pr-str
-   (info "xero contact update result: ")))
+  ))
 
 
 (update-contact-name
@@ -157,34 +174,9 @@
   t :contact
   {:contact-id "b93a996f-6a3b-4c63-bc30-249f2e662808" })
 
-(defn xero []
-    ; this function can be evaled entirely via clj-cli
-    ; or you can connect via nrepl port 9100 and eval 
-    ; one by one
-  (refresh-token-blocking)
-
-    ; show request that would be sent:
-  (->> (martian/request-for m :userinfo {})
-       (info "xero userinfo request: "))
-
-  (->> (martian/response-for m :tenants {})
-       :body
-       pr-str
-       (info "xero tenants: "))
-
-  (->>
-   (martian/response-for t :tenants {})
-   :body
-   (into [])
-   (map #(select-keys % [:tenantId :tenantType :tenantName]))
-   (print-table)
-       ;(info "tenants: ")
-   )
 
 
-  (->> (martian/response-for t :userinfo {})
-       :body
-       (info "xero userinfo: "))
+
 
   (->>
    (martian/response-for t :branding-themes {})
@@ -197,13 +189,13 @@
 
   (->> (martian/response-for t :invoice {:invoice-id invoice-id})
        :body
-       (info "invoice: "))
+  )
 
 
   (let [contact-id "4cff70ca-5042-423e-a418-e41b3cf0ca9c"]
     (->> (martian/response-for t :contact {:contact-id contact-id})
          :body
-         (info "contact: ")))
+        ))
 
 
   (->> (martian/response-for t :contact-group {})
@@ -249,6 +241,10 @@
 ;(get-request :xero/contacts) );
 
 
+  
 
-; **
-  )
+(let [tenant-id "791f3cb4-97b9-45f9-b5e6-7319cda87626"
+      params {:where "(Type == \"ACCREC\")"} ;"Date >= DateTime(2022, 01, 01)"
+      result (request-paginated t :invoice-list params :Invoices)]
+   ; (print-invoices result)
+    (println "inv count: " (count result)))

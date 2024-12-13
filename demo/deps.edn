@@ -3,84 +3,29 @@
          "target/webly"]
  :deps
  {org.clojure/clojure    {:mvn/version "1.10.3"}
-  clj-http/clj-http {:mvn/version "3.12.1"}
-  commons-codec/commons-codec {:mvn/version "1.15"}
-  uri/uri {:mvn/version "1.1.0"}
-  ;[clj-http "1.1.2"]
   funes/funes {:mvn/version "0.1.0"} ; generate schema from rest response
-  ; goldly deps
-  org.pinkgorilla/goldly {:mvn/version "0.4.621"}
-  org.pinkgorilla/ui-tailwind {:mvn/version "0.0.5"}
-  org.pinkgorilla/ui-repl {:mvn/version "0.0.72"}
+  ; pink-gorilla deps
+  org.pinkgorilla/webly {:mvn/version "0.8.707"}
+  org.pinkgorilla/ui-tailwind {:mvn/version "0.1.8"}
+  org.pinkgorilla/ui-repl {:mvn/version "0.1.112"}
   org.pinkgorilla/rest {:local/root "../rest" :deps/manifest :deps}}
 
  :aliases
- {:outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}
-             :main-opts ["-m" "antq.core"]}
+ {:webly {:exec-fn webly.app.app/webly-build
+          :exec-args {:config ["demo-config.edn"]
+                      :profile "npm-install"}}
+  
+  :npm-install {:exec-args {:profile "npm-install"}}
+  :compile {:exec-args {:profile "compile"}}
 
-  :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "0.9.0"}
-                       cider/cider-nrepl {:mvn/version "0.28.3"}}
-          :main-opts  ["-m" "nrepl.cmdline"]}
-
-   ; debugging
+  ; web
   :demo
   {:extra-deps {nrepl/nrepl {:mvn/version "0.9.0"}
                 cider/cider-nrepl {:mvn/version "0.28.3"}}
    :exec-fn modular.system/start!
-   :exec-args {:profile "jetty"
-               :config ["webly/config.edn"
-                        "goldly/config.edn"
-                        "oauth2/config.edn" ; oauth2 endpoints
-                        "demo-config.edn"
-                        "/home/florian/repo/myLinux/myvault/goldly/oauth2-localhost.edn" ; oauth2 secrets
-                        "/home/florian/repo/myLinux/myvault/goldly/crb-email-telegram.edn" ; email and telegram secrets
-                        ]
-               :services "demo-services.edn" #_"goldly/services.edn"}}
-
-  :npm-install
-  {:exec-fn goldly.app.build/goldly-build
-   :exec-args {:profile "npm-install"}}
-
-  :compile
-  {:exec-fn goldly.app.build/goldly-build
-   :exec-args {:profile "compile2"}}
-
-  :run
-  {:exec-fn modular.system/start!
-   :exec-args {:config ["webly/config.edn"
-                        "goldly/config.edn"
-                        "oauth2/config.edn" ; oauth2 endpoints
-                        "demo-config.edn"
-                        "/home/florian/repo/myLinux/myvault/goldly/oauth2-localhost.edn" ; oauth2 secrets
-                        "/home/florian/repo/myLinux/myvault/goldly/crb-email-telegram.edn" ; email and telegram secrets
-                        ]
-               :services "demo-run.edn"
-               :run demo/make-requests
-               }}
-
-  ; rest
-
-  :rest-xero {:exec-args {:provider :xero}}
-  :rest-github {:exec-args {:provider :github}}
-  :rest-google {:exec-args {:provider :google}}
-  
-  :rest-email {:exec-args {:provider :email}}
-
-  :rest-woo {:exec-args {:provider :woo}}
-  ;:rest-wordpress {:exec-args {:provider :wordpress}} ; wordpress does not work
-
-  ;:rest-pets {:exec-args {:provider :pets}} ; 2023-10-09 awb99: the heroku-app was down, so this does not work.
-  :rest-schema {:exec-args {:provider :schema}}
-  :rest-validate {:exec-args {:provider :validate}}
-  :rest-paging {:exec-args {:provider :paging}}
-
-  
-
-
-
-  
-
-  
-
+   :exec-args {:profile "watch"
+               :config [; oauth2 secrets
+                        "/home/florian/repo/myLinux/myvault/goldly/oauth2-localhost.edn" ]
+               :services "demo-services.edn"}}
 ;
   }}

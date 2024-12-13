@@ -1,6 +1,5 @@
 (ns modular.rest.paging
   (:require
-   [taoensso.timbre :refer [debug info warn error]]
    [martian.core :as martian]))
 
 ; https://clojure.atlassian.net/plugins/servlet/mobile?originPath=%2Fbrowse%2FCLJ-2555#issue/CLJ-2555

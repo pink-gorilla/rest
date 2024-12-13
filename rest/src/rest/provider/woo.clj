@@ -1,14 +1,9 @@
-(ns modular.rest.martian.woo
+(ns rest.provider.woo
   (:require
-   [taoensso.timbre :as timbre :refer [debug info warn error]]
-   [clj-http.client :as http]
-   [ajax.core :as ajax]
    [martian.clj-http :as martian-http]
    [martian.core :as martian]
    [martian.interceptors :as interceptors]
-   [schema.core :as s]
-   [modular.config :refer [get-in-config config-atom]]
-   [modular.oauth2.base64 :refer [base64-encode]]))
+   [schema.core :as s]))
 
 (def endpoints
   [{:route-name :orders
@@ -32,27 +27,32 @@
     :produces ["application/json"]
     :consumes ["application/json"]}])
 
-(def add-authentication-query-params
+(defn add-authentication-query-params [{:keys [consumer-key consumer-secret]}]
   {:name ::add-authentication-query-params
    :enter (fn [ctx]
             (-> ctx
-                (assoc-in [:request :query-params :consumer_key] (get-in-config [:oauth2 :woo :consumer-key]))
-                (assoc-in [:request :query-params :consumer_secret] (get-in-config [:oauth2 :woo :consumer-secret]))))})
+                (assoc-in [:request :query-params :consumer_key] consumer-key)
+                (assoc-in [:request :query-params :consumer_secret] consumer-secret)))})
 
-(def interceptors
+(defn interceptors [this]
   {:interceptors
    (concat
     martian/default-interceptors
-    [add-authentication-query-params
+    [(add-authentication-query-params this)
      interceptors/default-encode-body
      interceptors/default-coerce-response
      martian-http/perform-request])})
 
-(defn base-url []
-  (str (get-in-config [:oauth2 :woo :shop-url])
-       "/wp-json/wc/v3"))
+(defn base-url [{:keys [shop-url]}]
+  (str shop-url "/wp-json/wc/v3"))
 
-(defn martian-woo []
-  (let [m (martian-http/bootstrap (base-url) endpoints interceptors)]
+(defn martian-woo 
+  "this needs to be a map with :shop-url :consumer-key :consumer-secret"
+  [this]
+  (assert (map? this) "this needs to be a map")
+  (assert (:show-url this) "the woo map needs to have :shop-url")
+  (assert (:consumer-key this) "the woo map needs to have :consumer-key")
+  (assert (:consumer-secret this) "the woo map needs to have :consumer-secret")
+  (let [m (martian-http/bootstrap (base-url this) endpoints (interceptors this))]
     m))
 

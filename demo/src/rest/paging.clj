@@ -1,9 +1,8 @@
 (ns rest.paging
   (:require
    [clojure.pprint :refer [print-table]]
-   [taoensso.timbre :as timbre :refer [info error]]
    [modular.oauth2.token.refresh :refer [refresh-access-token]]
-   [modular.rest.paging :refer [iteration request-paginated]]
+ 
    [modular.rest.martian.xero :refer [martian-xero martian-xero-tenant]]
    ))
 
@@ -35,14 +34,4 @@
             ]))
        (print-table)))
 
-(defn paging-xero []
-  @(refresh-access-token :xero)
-  (let [tenant-id "791f3cb4-97b9-45f9-b5e6-7319cda87626"
-        t (martian-xero-tenant tenant-id)
-        params {:where "(Type == \"ACCREC\")"} ;"Date >= DateTime(2022, 01, 01)"
-        result (request-paginated t :invoice-list params :Invoices)
-       ]
-   ; (print-invoices result)
-    (info "inv count: " (count result))
-  ))
 

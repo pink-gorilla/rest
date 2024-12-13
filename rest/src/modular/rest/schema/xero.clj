@@ -1,6 +1,5 @@
 (ns modular.rest.schema.xero
   (:require
-   [taoensso.timbre :as timbre :refer [debug info warn error]]
    [martian.core :as martian]
    [schema.core :as s]))
 

@@ -14,33 +14,15 @@
 
 # demo
 
-The demo uses the extension manager from goldly to add oauth2 to goldly.
 
 ```
 cd demo
-clj -X:demo:npm-install
-clj -X:demo:compile
+clj -X:webly:npm-install
 clj -X:demo
 ```
 
-Test local user/password login: user: "demo" password: "1234"
-
-Authorize xero/google/...
-
-Then you can run the cli demos that use the access tokens:
-
-```
-clj -X:run:rest-google
-clj -X:run:rest-github
-clj -X:run:rest-xero
-
-clj -X:run:rest-woo
-
-clj -X:run:rest-email
+Open Browser on port 8080 and get auth tokens
 
 
-; infer schema from rest-api-response (useful to quickly create api schema)
-clj -X:run:rest-schema
-
-
-```
+Then you can connect to nrepl port 9100 and evaluate
+demo/rest/*.clj

@@ -1,9 +1,7 @@
-(ns modular.rest.martian.google
+(ns rest.provider.google
   (:require
-   [taoensso.timbre :as timbre :refer [debug info warn error]]
-   [martian.core :as martian]
    [schema.core :as s]
-   [modular.rest.martian.oauth2 :refer [martian-oauth2]]))
+   [rest.oauth2 :refer [martian-oauth2]]))
 
 (def endpoints
   [{:route-name :userinfo
@@ -56,22 +54,25 @@
     :produces ["application/json"]
     :consumes ["application/json"]}])
 
-(defn martian-googleapis []
+(defn martian-googleapis [this]
   (let [m (martian-oauth2
+           this
            :google
            "https://www.googleapis.com"
            endpoints)]
     m))
 
-(defn martian-google-sheets []
+(defn martian-google-sheets [this]
   (let [m (martian-oauth2
+           this
            :google
            "https://sheets.googleapis.com/v4"
            endpoints-sheets)]
     m))
 
-(defn martian-google-search []
+(defn martian-google-search [this]
   (let [m (martian-oauth2
+           this
            :google
            "https://api.goog.io"
            endpoints-search)]
