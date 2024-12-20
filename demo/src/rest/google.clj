@@ -3,7 +3,6 @@
    [clojure.pprint :refer [print-table]]
    [promesa.core :as p]
    [martian.core :as martian]
-
    [token.oauth2.core :refer [get-access-token]]
    [rest.provider.google :refer [martian-googleapis martian-google-sheets martian-google-search]]
    [modular.system]))

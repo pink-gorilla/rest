@@ -1,6 +1,5 @@
 (ns rest.woo
  (:require
-   [clojure.pprint :refer [print-table]]
    [taoensso.timbre :as timbre :refer [debug info warn error]]
    [martian.core :as martian]
    [modular.rest.martian.woo :refer [martian-woo]]))
