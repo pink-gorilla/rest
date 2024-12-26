@@ -50,7 +50,7 @@
   "this needs to be a map with :shop-url :consumer-key :consumer-secret"
   [this]
   (assert (map? this) "this needs to be a map")
-  (assert (:show-url this) "the woo map needs to have :shop-url")
+  (assert (:shop-url this) "the woo map needs to have :shop-url")
   (assert (:consumer-key this) "the woo map needs to have :consumer-key")
   (assert (:consumer-secret this) "the woo map needs to have :consumer-secret")
   (let [m (martian-http/bootstrap (base-url this) endpoints (interceptors this))]
