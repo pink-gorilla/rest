@@ -16,7 +16,7 @@
             (let [prefix (oauth2-auth-header-prefix {:provider provider})
                   ; token-prefix could be: "Token: " "Bearer "
                   access-token (p/await (get-access-token this-oauth2 provider))]
-              (println "adding auth token: " access-token)
+              ;(println "adding auth token: " access-token)
               (if (is-exception? access-token)
                 (throw access-token)
                 (assoc-in ctx
