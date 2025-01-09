@@ -1,10 +1,14 @@
 (ns rest.provider.xero
   (:require
+   [jsonista.core :as j] ; json read/write
    [martian.core :as martian]
    [schema.core :as s]
    [martian.interceptors :as interceptors]
    [martian.clj-http :as martian-http]
    [rest.oauth2 :refer [martian-oauth2 add-authentication-header]]))
+
+(defn parse-json [json]
+  (j/read-value json j/keyword-keys-object-mapper))
 
 (def endpoints
   [{:route-name :userinfo
@@ -40,14 +44,14 @@
     :body-schema {:c s/Any}
     :produces ["application/json"]
     :consumes ["application/json"]}
-    #_{:route-name :contact-update ; post works for update; put is not needed
-    :summary "update contact"
-    :method :put
-    :path-parts ["/api.xro/2.0/Contacts/" :contact-id]
-    :path-schema {:contact-id s/Str}
-    :body-schema {:c {:Contacts s/Any}}
-    :produces ["application/json"]
-    :consumes ["application/json"]}
+   #_{:route-name :contact-update ; post works for update; put is not needed
+      :summary "update contact"
+      :method :put
+      :path-parts ["/api.xro/2.0/Contacts/" :contact-id]
+      :path-schema {:contact-id s/Str}
+      :body-schema {:c {:Contacts s/Any}}
+      :produces ["application/json"]
+      :consumes ["application/json"]}
    {:route-name :add-contacts-to-group
     :summary "adds contacts to contact-group"
     :method :put
@@ -137,9 +141,9 @@
 
 (defn martian-xero [this]
   (let [m (martian-oauth2 this
-           :xero
-           "https://api.xero.com"
-           endpoints)]
+                          :xero
+                          "https://api.xero.com"
+                          endpoints)]
     m))
 
 ;; XERO-TENANT
@@ -153,12 +157,12 @@
 
 (defn- interceptors-tenant [this tenant-id]
   (concat
-    martian/default-interceptors
-    [(add-authentication-header this :xero)
-     (add-tenant-header tenant-id)
-     interceptors/default-encode-body
-     interceptors/default-coerce-response
-     martian-http/perform-request]))
+   martian/default-interceptors
+   [(add-authentication-header this :xero)
+    (add-tenant-header tenant-id)
+    interceptors/default-encode-body
+    interceptors/default-coerce-response
+    martian-http/perform-request]))
 
 (defn martian-xero-tenant
   ([this tenant-id]
@@ -181,12 +185,45 @@
 
 (defn- interceptors-tenant-since [this tenant-id since]
   (concat
-     (interceptors-tenant this tenant-id)
-     [(add-modified-since-header since)]))
-   
+   (interceptors-tenant this tenant-id)
+   [(add-modified-since-header since)]))
+
 (defn martian-xero-tenant-since [this tenant-id since]
   (martian-http/bootstrap
-   "https://api.xero.com" 
-   endpoints 
-   {:interceptors (interceptors-tenant-since this tenant-id since)}
-   ))
+   "https://api.xero.com"
+   endpoints
+   {:interceptors (interceptors-tenant-since this tenant-id since)}))
+
+
+(defn xero-request
+  ([m req-type req-opts]
+   (xero-request m req-type req-opts nil))
+  ([m req-type req-opts extract-type]
+   (try
+     (let [body (-> (martian/response-for m req-type req-opts)
+                    :body)]
+       (if extract-type
+         (extract-type body)
+         body))
+     (catch Exception ex
+       (let [data (ex-data ex)
+             data-short (select-keys data [:reason-phrase :type
+                                           :status :length
+                                           :body])
+             body (:body data)
+             body (if (= (:status data) 400)
+                    (try (parse-json body)
+                         (catch Exception _jsex
+                           body))
+                    body)]
+        ;(println "keys: " (keys data))
+         (println "xero req " req-type req-opts " failed: " data-short)
+         (if body
+           (throw (ex-info (str "xero error for " req-type)
+                           (if (map? body)
+                             body
+                             {:error body})))
+           (throw ex)))))))
+ 
+  
+

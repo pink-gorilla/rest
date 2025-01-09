@@ -4,7 +4,8 @@
    [martian.core :as martian]
    [modular.system]
    [modular.rest.paging :refer [request-paginated]]
-   [rest.provider.xero :refer [martian-xero martian-xero-tenant]]))
+   [rest.provider.xero :refer [martian-xero martian-xero-tenant xero-request]]))
+
 
 
 ; this comes from the xero identity token:
@@ -151,9 +152,25 @@
  "woo/KleenToDiTee")
 
 ; get contact
- #_(martian/response-for 
+ (martian/response-for 
   t :contact
-  {:contact-id "2dd7ecba-df6b-4a5d-98a3-daca48f41fae"})
+  )
+
+
+(xero-request t :contact 
+              {:contact-id "2dd7ecba-df6b-4a5d-98a3-daca48f41fae"}
+              :Contacts)
+
+(try 
+ (xero-request
+  t :contact
+  {:contact-id "aasdf"}) 
+  (catch Exception ex
+    (println (ex-message ex) (ex-data ex))
+    )
+  )
+ 
+
 
 ; create contact
  #_(martian/response-for
@@ -165,6 +182,14 @@
  t :contact-create
  {:Name "BatMan! v2" 
   :ContactID "b93a996f-6a3b-4c63-bc30-249f2e662808" })
+
+ (try
+  (xero-request
+   t :contact-create
+   {:Name1 "asdf"})
+  (catch Exception ex
+    (println (ex-message ex) (ex-data ex)))) 
+
 
 (update-contact-name
  "b93a996f-6a3b-4c63-bc30-249f2e662808" 
@@ -239,9 +264,7 @@
        print-invoices)
 
 ;(get-request :xero/contacts) );
-
-
-  
+ 
 
 (let [tenant-id "791f3cb4-97b9-45f9-b5e6-7319cda87626"
       params {:where "(Type == \"ACCREC\")"} ;"Date >= DateTime(2022, 01, 01)"
