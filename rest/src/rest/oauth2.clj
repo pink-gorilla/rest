@@ -10,12 +10,12 @@
 (defn is-exception? [value]
   (instance? Throwable value))
 
-(defn add-authentication-header [this-oauth2 provider]
+(defn add-authentication-header [token provider]
   {:name ::add-authentication-header
    :enter (fn [ctx]
             (let [prefix (oauth2-auth-header-prefix {:provider provider})
                   ; token-prefix could be: "Token: " "Bearer "
-                  access-token (p/await (get-access-token this-oauth2 provider))]
+                  access-token (p/await (get-access-token token provider))]
               ;(println "adding auth token: " access-token)
               (if (is-exception? access-token)
                 (throw access-token)
@@ -23,15 +23,15 @@
                           [:request :headers "Authorization"]
                           (str prefix " " access-token)))))})
 
-(defn interceptors [this-oauth2 provider]
+(defn interceptors [token provider]
   {:interceptors
    (concat
     martian/default-interceptors
-    [(add-authentication-header this-oauth2 provider)
+    [(add-authentication-header token provider)
      interceptors/default-encode-body
      interceptors/default-coerce-response
      martian-http/perform-request])})
 
-(defn martian-oauth2 [this-oauth2 provider base-url endpoints]
-  (let [m (martian-http/bootstrap base-url endpoints (interceptors this-oauth2 provider))]
+(defn martian-oauth2 [token provider base-url endpoints]
+  (let [m (martian-http/bootstrap base-url endpoints (interceptors token provider))]
     m))

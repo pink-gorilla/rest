@@ -2,7 +2,7 @@
          "resources"
          "target/webly"]
  :deps
- {org.clojure/clojure    {:mvn/version "1.10.3"}
+ {org.clojure/clojure    {:mvn/version "1.12.4"}
   funes/funes {:mvn/version "0.1.0"} ; generate schema from rest response
   ; pink-gorilla deps
   org.pinkgorilla/webly {:mvn/version "0.8.707"}

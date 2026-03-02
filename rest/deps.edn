@@ -1,10 +1,11 @@
 {:paths ["src"
          "resources"]
  :deps
- {org.clojure/clojure    {:mvn/version "1.11.1"}
+ {org.clojure/clojure    {:mvn/version "1.12.4"}
   com.github.oliyh/martian {:mvn/version "0.1.30"}
   com.github.oliyh/martian-clj-http {:mvn/version "0.1.30"}
-  org.pinkgorilla/oauth2 {:mvn/version "0.2.31"}}
+  org.pinkgorilla/oauth2 {:mvn/version "0.3.56"}
+  }
 
  :aliases
  {; github ci  
