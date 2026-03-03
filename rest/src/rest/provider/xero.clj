@@ -5,7 +5,7 @@
    [schema.core :as s]
    [martian.interceptors :as interceptors]
    [martian.clj-http :as martian-http]
-   [rest.oauth2 :refer [martian-oauth2 add-authentication-header]]))
+   [rest.oauth2 :refer [martian-oauth2 add-authentication-header add-no-cookie-header]]))
 
 (defn parse-json [json]
   (j/read-value json j/keyword-keys-object-mapper))
@@ -160,6 +160,7 @@
    martian/default-interceptors
    [(add-authentication-header this :xero)
     (add-tenant-header tenant-id)
+    add-no-cookie-header
     interceptors/default-encode-body
     interceptors/default-coerce-response
     martian-http/perform-request]))

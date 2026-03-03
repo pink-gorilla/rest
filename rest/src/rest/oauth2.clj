@@ -23,11 +23,23 @@
                           [:request :headers "Authorization"]
                           (str prefix " " access-token)))))})
 
+(def add-no-cookie-header
+  {:name ::no-cookie
+   :enter (fn [ctx]
+            (let [ctx2 (-> ctx
+                           ;(assoc-in [:request :trace-redirects] true)
+                           ;(assoc-in [:request :redirect-strategy] :lax)
+                           (assoc-in [:request :cookie-policy]  :none)  ;; solve cookie log errors
+                           )]
+              ;(info "ctx2: " (:request ctx2))
+              ctx2))})
+
 (defn interceptors [token provider]
   {:interceptors
    (concat
     martian/default-interceptors
     [(add-authentication-header token provider)
+     add-no-cookie-header
      interceptors/default-encode-body
      interceptors/default-coerce-response
      martian-http/perform-request])})
