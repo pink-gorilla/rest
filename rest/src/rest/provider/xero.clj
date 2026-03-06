@@ -208,23 +208,23 @@
          body))
      (catch Exception ex
        (let [data (ex-data ex)
-             data-short (select-keys data [:reason-phrase :type
-                                           :status :length
-                                           :body])
-             body (:body data)
-             body (if (= (:status data) 400)
-                    (try (parse-json body)
-                         (catch Exception _jsex
-                           body))
-                    body)]
-        ;(println "keys: " (keys data))
-         (println "xero req " req-type req-opts " failed: " data-short)
+             body (when (contains? #{400 403} (:status data))
+                    (try
+                      (println "xero-req is error - parsing body..")
+                      (parse-json (:body data))
+                      (catch Exception _jsex
+                        (println "xero err body parsing failed.")
+                        nil)))]
+         (println "xero req " req-type req-opts " failed: "
+                  (select-keys data [:reason-phrase :type
+                                     :status :length
+                                     :body]))
          (if body
-           (throw (ex-info (str "xero error for " req-type)
-                           (if (map? body)
-                             body
-                             {:error body})))
+           (do (println "parsed body: " body)
+               (if-let [detail  (get body :Detail)]
+                 (throw (ex-info (str "xero api request failed: " detail)
+                                 {:body body}))
+                 (throw (ex-info (str "xero error for " req-type)
+                                 {:error body}))))
            (throw ex)))))))
- 
-  
 
