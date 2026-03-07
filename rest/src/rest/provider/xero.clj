@@ -1,5 +1,6 @@
 (ns rest.provider.xero
   (:require
+   [taoensso.timbre :as timbre :refer [debug info warn error]]
    [jsonista.core :as j] ; json read/write
    [martian.core :as martian]
    [schema.core :as s]
@@ -195,36 +196,49 @@
    endpoints
    {:interceptors (interceptors-tenant-since this tenant-id since)}))
 
+(defn re-throw [ex]
+  (let [data (ex-data ex)
+        _ (warn "xero ex data keys: " (keys data))
+        status (:status data)
+        headers (:headers data)
+        body (when (contains? #{400 403} (:status data))
+               (try
+                     ;(println "xero-req is error - parsing body..")
+                 (parse-json (:body data))
+                 (catch Exception _jsex
+                   (error "xero err body parsing failed.")
+                   nil)))]
+    #_(println "xero req " req-type req-opts " failed: "
+               (select-keys data [:reason-phrase :type
+                                  :status :length
+                                  :body]))
+    (cond
+      body (do (warn "parsed body: " body)
+               (if-let [detail (get body :Detail)]
+                 (throw (ex-info (str "xero api request failed: " detail)
+                                 {:body body}))
+                 (throw (ex-info "xero error" {:error body}))))
+      headers (do (warn "parsed headers: " headers)
+                  (throw ex)
+                  )
+      :else
+      (throw ex))))
+
+(defmacro with-sane-exception [body]
+  `(try
+     ~body
+     (catch Exception ex#
+       (re-throw ex#))))
+
 
 (defn xero-request
   ([m req-type req-opts]
    (xero-request m req-type req-opts nil))
   ([m req-type req-opts extract-type]
-   (try
+   (with-sane-exception
      (let [body (-> (martian/response-for m req-type req-opts)
                     :body)]
        (if extract-type
          (extract-type body)
-         body))
-     (catch Exception ex
-       (let [data (ex-data ex)
-             body (when (contains? #{400 403} (:status data))
-                    (try
-                      (println "xero-req is error - parsing body..")
-                      (parse-json (:body data))
-                      (catch Exception _jsex
-                        (println "xero err body parsing failed.")
-                        nil)))]
-         (println "xero req " req-type req-opts " failed: "
-                  (select-keys data [:reason-phrase :type
-                                     :status :length
-                                     :body]))
-         (if body
-           (do (println "parsed body: " body)
-               (if-let [detail  (get body :Detail)]
-                 (throw (ex-info (str "xero api request failed: " detail)
-                                 {:body body}))
-                 (throw (ex-info (str "xero error for " req-type)
-                                 {:error body}))))
-           (throw ex)))))))
+         body)))))
 
