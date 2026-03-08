@@ -218,9 +218,15 @@
                  (throw (ex-info (str "xero api request failed: " detail)
                                  {:body body}))
                  (throw (ex-info "xero error" {:error body}))))
-      headers (do (warn "parsed headers: " headers)
-                  (throw ex)
-                  )
+      headers (let [;_ (warn "parsed headers: " headers)
+                    headers-short (select-keys headers ["X-DayLimit-Remaining"
+                                                        "X-Rate-Limit-Problem"
+                                                        "Retry-After"
+                                                        "X-AppMinLimit-Remaining"
+                                                        "X-MinLimit-Remaining"])]
+                (warn "xero-rate-limit headers: " headers-short)
+                (throw ex))
+      
       :else
       (throw ex))))
 
@@ -242,3 +248,15 @@
          (extract-type body)
          body)))))
 
+; import failed:  :xero-contacts-recent error:  Interceptor Exception: clj-http: status 429
+; 2026-03-08T01:21:48.891Z localhost WARN [rest.provider.xero:201] - xero ex data keys:
+; (:headers :status :body)
+
+; X-Rate-Limit-Problem: minute-limit
+; X-Rate-Limit-Problem: day-limit
+; minute-limit	> 60 requests/minute
+; day-limit	> 5000 requests/day
+; concurrent-limit	> 5 concurrent requests
+
+; Retry-After: 30
+; Meaning: wait 30 seconds before retrying

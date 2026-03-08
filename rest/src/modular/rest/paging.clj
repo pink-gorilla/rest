@@ -2,7 +2,6 @@
   (:require
    [martian.core :as martian]))
 
-
 (defn make-paginate [m handler params result-kw]
   (fn [page]
     (let [page (or page 1)
