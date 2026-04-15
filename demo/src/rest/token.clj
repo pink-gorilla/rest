@@ -5,7 +5,7 @@
    [martian.yaml :refer [yaml->edn]]
    [token.oauth2.core :refer [get-access-token get-provider-client-id]]
    [modular.system]
-   [modular.persist.edn :refer [pprint-str]]
+   [ednx.fipp :refer [spit-fipp]]
    
    ))
 
@@ -48,14 +48,12 @@
 
 (->> (slurp "resources/xero.yaml")
     (yaml->edn) 
-    pprint-str
-    (spit "resources/xero.edn"))
+    (spit-fipp "resources/xero.edn"))
 
 
 (->> (slurp "resources/calendar.yaml")
      (yaml->edn)
-     pprint-str
-     (spit "resources/calendar.edn"))
+     (spit-fipp "resources/calendar.edn"))
 
 
 
